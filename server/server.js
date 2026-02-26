@@ -71,9 +71,9 @@ app.post("/analyze", async (req, res) => {
         agent: process.env.DEVREV_AGENT,
         event: {
           input_message: {
-            message: `Please check ticket ${ticketId}. Did the customer agree to remove ? 
-              Did the customer agree to remove the ${email} from any list? write the answer in following json format YES or NO example like.Return JSON like:
-{"consent":"YES or NO","TKT":"${ticketId}","Email_to_remove":"${email}"}. Please ensure that only a single response is sent to the webhook endpoint for each request. Multiple responses should not be triggered after a few seconds for the same webhook call.
+            message: `Please check ticket ${ticketId}. 
+              Did the customer agree to remove the ${email} from any list? write the answer in following json format YES or NO example like. Also give the line where user have mentioned to remove the emailiDs from the list. Return JSON like:
+{"consent":"YES or NO","TKT":"${ticketId}","Email_to_remove":"${email},"customer mentioned":"customer message"}. Please ensure that only a single response is sent to the webhook endpoint for each request. Multiple responses should not be triggered after a few seconds for the same webhook call.
 `
           }
         },
@@ -117,18 +117,19 @@ app.post("/webhook", async (req, res) => {
   }
 
   console.log("📩 Webhook Received");
-  // console.log(JSON.stringify(body, null, 2));
+  // console.log(JSON.stringify(body));
 
   try {
     if (body.ai_agent_response?.message) {
 
-      // console.log("cleanMessage",body.ai_agent_response.message)
-      // console.log("helllllooo")
-      // const cleanMessage = body.ai_agent_response.message
-      //   .replace(/```json/g, "")
-      //   .replace(/```/g, "")
-      //   .trim();
+      console.log("cleanMessage",body.ai_agent_response.message)
+      console.log("helllllooo")
+      const cleanMessage = body.ai_agent_response.message
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
+        console.log("cleanMessage",cleanMessage)
 
 
       const fullMessage = body.ai_agent_response.message;
@@ -147,19 +148,11 @@ if (jsonMatch && jsonMatch[1]) {
   }
 }
 
-
-
-
-
-
-
-   
-
       // Broadcast to frontend
       clients.forEach(client => {
         client.write(`data: ${JSON.stringify({
           type: "ai_response",
-          data: parsedDataa
+          data: parsedData
         })}\n\n`);
       });
     }
